@@ -17,16 +17,91 @@ Problem definition (II)
 
 In distance learning, 30% or even 40% dropout rates are common.
 
-A predictive system could aid these institution to develop early, focused, effective retention actions.  
+A dropout prediction system could aid these institution to develop early, focused, effective retention actions.  
 
 But, what could be the potential ROI?
 
 Business case
 ========================================================
 
-```{r, echo=FALSE}
-plot(cars)
-```
+A sound business case must be provided in order to help decision makers understand:  
+- The expected costs of a predictive system
+- The expected benefits
+- The parameters that will affect both quantities
+- The expected ROI
+
+The ROI Calculator App has been created to automate the neccesary calculations.
 
 Example
 =========================================================
+The output of the calculator is expressed in textual form to help business users understand it. This is a real example output:  
+```{r echo=FALSE}
+roi <- function(numEst=2696, credPrim=67465, credPos=7496, precPrim=75, precPos=37.5, porcAb=30, sens=70, porcFP=20, costeAcc=5, efAcc=5, costeMod=15000)
+{
+
+  #Do calculations
+  credPrimEst <- credPrim/numEst
+  credPosEst <- credPos/numEst
+  ingrEst <- credPrimEst * precPrim + credPosEst * precPos
+  abandonosBase <- round(numEst * porcAb/100)
+  numEstRet <- round(abandonosBase * sens/100 * efAcc/100)
+  ingrAdicBrutos <- numEstRet * ingrEst
+  verdPos <- round(abandonosBase * sens/100)
+  falsPos <- round((numEst - abandonosBase)*porcFP/100)
+  numAcc <- verdPos + falsPos
+  costeTotAcc <- numAcc * costeAcc
+  ingrAdicNetos <- ingrAdicBrutos - costeTotAcc - costeMod
+  
+  resultado <- data.frame(
+    "numEst"=numEst,
+    "credPrim"=credPrim,
+    "credPos"=credPos,
+    "precPrim"=precPrim,
+    "precPos"=precPos,
+    "porcAb"=porcAb,
+    "sens"=sens,
+    "porcFP"=porcFP,
+    "costeAcc"=costeAcc,
+    "costeMod"=costeMod,
+    "efAcc"=efAcc,
+    "credPrimEst"=credPrimEst,
+    "credPosEst"=credPosEst,
+    "ingrEst"=ingrEst,
+    "abandonosBase"= abandonosBase,
+    "numEstRet"= numEstRet,
+    "ingrAdicBrutos"=ingrAdicBrutos,
+    "verdPos"=verdPos,
+    "falsPos"=falsPos,
+    "numAcc"= numAcc,
+    "costeTotAcc"= costeTotAcc,
+    "ingrAdicNetos"= ingrAdicNetos)
+  
+  resultado         
+}
+
+res<-roi()
+
+paste("From ",
+          res[1,]$numEst,
+          "enrolled students, ",
+          res[1,]$abandonosBase,
+          " would dropout the next year. The system would generate ",
+          res[1,]$numAcc,
+          " dropout risk alerts,",
+          res[1,]$verdPos,
+          " would be true alerts, and ",
+          res[1,]$falsPos,
+          " would be false alarms. ",
+          res[1,]$numAcc,
+          " retention actions would be triggered, with a total cost of ",
+          res[1,]$costeTotAcc,
+          " €. As a result, ",
+          res[1,]$numEstRet,
+          " students would be retained, generating next year a gross revenue of ",
+          round(res[1,]$ingrAdicBrutos,2),
+          " € and a net income of ",
+          round(res[1,]$ingrAdicNetos,2),
+          " € (that is: after substracting the cost of retention actions ant the cost of the predictive system)."
+          )
+
+```
